@@ -63,7 +63,7 @@ project:
   name: my-api
   language: typescript
   framework: express
-  architecture: layered          # auto-detected: layered | hexagonal | mvc | feature-based
+  architecture: layered # auto-detected: layered | hexagonal | mvc | feature-based
 
 stats:
   files: 120
@@ -138,6 +138,7 @@ domains:
 ```
 
 Domains are detected automatically from:
+
 - File names (`userController.js` → `users`)
 - Endpoint paths (`/users/:id` → `users`)
 - Model names (`User.js` → `users`)
@@ -269,23 +270,29 @@ Default recipe orchestration:
 
 ```javascript
 async function build(projectPath) {
-  const files        = await scanRepo(projectPath)
-  const imports      = scanImports(files)
-  const exports      = scanExports(files)
-  const endpoints    = scanEndpoints(files)
-  const architecture = detectArchitecture(files, imports)
-  const graph        = buildGraph(files, imports)
-  const impact       = buildImpact(graph, endpoints)
-  const docs         = scanDocs(projectPath)
-  const domains      = buildDomainMap(files, endpoints, docs, imports)
-  const symbols      = buildSymbolIndex(exports, domains)
-  const fileIndex    = buildFileIndex(files, imports, exports, domains)
-  const embeddings   = await buildEmbeddings(docs, domains, symbols)
+  const files = await scanRepo(projectPath);
+  const imports = scanImports(files);
+  const exports = scanExports(files);
+  const endpoints = scanEndpoints(files);
+  const architecture = detectArchitecture(files, imports);
+  const graph = buildGraph(files, imports);
+  const impact = buildImpact(graph, endpoints);
+  const docs = scanDocs(projectPath);
+  const domains = buildDomainMap(files, endpoints, docs, imports);
+  const symbols = buildSymbolIndex(exports, domains);
+  const fileIndex = buildFileIndex(files, imports, exports, domains);
+  const embeddings = await buildEmbeddings(docs, domains, symbols);
 
   writeMemory({
-    architecture, graph, endpoints, impact,
-    domains, symbols, fileIndex, embeddings
-  })
+    architecture,
+    graph,
+    endpoints,
+    impact,
+    domains,
+    symbols,
+    fileIndex,
+    embeddings,
+  });
 }
 ```
 
@@ -310,15 +317,15 @@ file change
 #### Natural language API
 
 ```javascript
-memory.ask(question)
-memory.detectDomain(question)
-memory.getDomain("users")
-memory.getDomainEndpoints("users")
-memory.getDomainDocs("users")
-memory.getDomainDependencies("users")
-memory.getImpact("src/services/userService.js")
-memory.findSymbol("createUser")
-memory.applyPattern("create_endpoint", { domain: "users" })
+memory.ask(question);
+memory.detectDomain(question);
+memory.getDomain('users');
+memory.getDomainEndpoints('users');
+memory.getDomainDocs('users');
+memory.getDomainDependencies('users');
+memory.getImpact('src/services/userService.js');
+memory.findSymbol('createUser');
+memory.applyPattern('create_endpoint', { domain: 'users' });
 ```
 
 #### Structured query language
@@ -356,11 +363,13 @@ question
 ### 6. Domain embeddings
 
 Embeddings cover more than just doc text. Each domain embedding combines:
+
 - domain description
 - endpoint list
 - symbol names
 
 Example embedding source text:
+
 ```
 users domain user account profile createUser updateUser deleteUser POST /users GET /users/:id
 ```
@@ -372,6 +381,7 @@ This greatly improves semantic domain detection from natural language queries.
 ## Implementation Phases
 
 ### Phase 1 — Scaffold
+
 - [ ] Initialize project (ESM + TypeScript)
 - [ ] CLI entry point (`bin/index.js`)
 - [ ] Dependencies: `@babel/parser`, `@babel/traverse`, `js-yaml`, `glob`
@@ -379,6 +389,7 @@ This greatly improves semantic domain detection from natural language queries.
 - [ ] `memory/` directory structure: `index/`, `semantic/`, `cache/`, `docs/`
 
 ### Phase 2 — Scanner modules
+
 - [ ] `scanRepo` — walk `src/` and collect `.js`/`.ts` files
 - [ ] `scanImports` — AST-based dependency extraction
 - [ ] `scanExports` — AST-based export extraction (functions, classes, constants)
@@ -387,6 +398,7 @@ This greatly improves semantic domain detection from natural language queries.
 - [ ] `detectArchitecture` — infer layered / hexagonal / mvc / feature-based
 
 ### Phase 3 — Index builders
+
 - [ ] `buildGraph` — nodes (file, type) + edges (imports)
 - [ ] `buildImpact` — direct/indirect levels + endpoint propagation
 - [ ] `buildDomainMap` — infer domains, inter-domain dependencies/dependents
@@ -394,21 +406,25 @@ This greatly improves semantic domain detection from natural language queries.
 - [ ] `buildFileIndex` — per-file metadata (type, exports, imports, loc, hash)
 
 ### Phase 4 — Embeddings
+
 - [ ] `buildEmbeddings` — doc chunks + domain descriptions + symbol names
 - [ ] `buildEntityEmbeddings` — entity names for semantic resolution
 
 ### Phase 5 — Memory writer + cache
+
 - [ ] `writeMemory` — serialize to `index/`, `semantic/`, `docs/`
 - [ ] `hashCache` — file hashes in `cache/file_hashes.json`
 - [ ] `build_meta.json` — timestamp, recipe, stats
 - [ ] Domain sharding for large repos (`memory/domains/*.yaml`)
 
 ### Phase 6 — Default recipe
+
 - [ ] Wire all modules into `recipes/default.js` (`{ build, update }`)
 - [ ] Incremental `update()`: scope to affected domains, update subgraph only
 - [ ] Strategy selector from `cortex.config.json`
 
 ### Phase 7 — Query engine
+
 - [ ] `memory.getDomain()`, `memory.getImpact()`, `memory.findSymbol()`
 - [ ] `memory.query()` — structured query language
 - [ ] `memory.ask()` — full pipeline (intent → entity → symbol → domain → graph → docs → LLM)
@@ -416,12 +432,14 @@ This greatly improves semantic domain detection from natural language queries.
 - [ ] Cosine similarity search over `semantic/docs_embeddings.json`
 
 ### Phase 8 — CLI polish
+
 - [ ] `cortex.config.json` (recipe selection, custom domain hints, src paths)
 - [ ] `--watch` mode with truly incremental domain-scoped updates
 - [ ] Token footprint summary output
 - [ ] Architecture detection in output
 
 ### Phase 9 — Plugin system (future)
+
 - [ ] Plugin interface: scanners, pattern generators, domain detectors
 - [ ] Built-in plugins: express, prisma, nextjs, nestjs
 

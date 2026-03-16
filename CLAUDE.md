@@ -17,5 +17,6 @@ No build or lint scripts are defined yet.
 ## Architecture
 
 No source code exists yet. When implementing, note:
+
 - Module format: CommonJS (`"type": "commonjs"`)
 - Declared main entry: `index.js`
